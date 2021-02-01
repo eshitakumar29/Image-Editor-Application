@@ -1,18 +1,5 @@
 """
 Image processing methods for the imager application.
-
-This module provides all of the image processing operations that are called
-whenever you press a button. Some of these are provided for you and others you
-are expected to write on your own.
-
-Note that this class is a subclass of Editor. This allows you to make use
-of the undo functionality. You do not have to do anything special to take
-advantage of this.  Just make sure you use getCurrent() to access the most
-recent version of the image.
-
-Based on an original file by Dexter Kozen (dck10) and Walker White (wmw2)
-
-Author: Eshita Kumar (ek536) and Sarika Kannan (sk2446)
 Date:   November 20, 2019
 """
 import a6editor
@@ -21,50 +8,31 @@ import a6editor
 class Filter(a6editor.Editor):
     """
     A class that contains a collection of image processing methods
-
-    This class is a subclass of a6editor. That means it inherits all of the
-    methods and attributes of that class too. We do that (1) to put all of the
-    image processing methods in one easy to read place and (2) because we might
-    want to change how we implement the undo functionality later.
-
-    This class is broken into three parts (1) implemented non-hidden methods,
-    (2) non-implemented non-hidden methods and (3) hidden methods. The
-    non-hidden methods each correspond to a button press in the main
-    application.  The hidden methods are all helper functions.
-
-    Each one of the non-hidden functions should edit the most recent image
-    in the edit history (which is inherited from Editor).
     """
 
-    # PROVIDED ACTIONS (STUDY THESE)
     def invert(self):
         """
         Inverts the current image, replacing each element with its color complement
         """
         current = self.getCurrent()
-        for pos in range(len(current)): # We can do this because of __len__
-            rgb = current[pos]          # We can do this because of __getitem__
+        for pos in range(len(current)):
+            rgb = current[pos] 
             red   = 255 - rgb[0]
             green = 255 - rgb[1]
             blue  = 255 - rgb[2]
-            rgb = (red,green,blue)      # New pixel value
-            current[pos] = rgb          # We can do this because of __setitem__
+            rgb = (red,green,blue)
+            current[pos] = rgb
 
     def transpose(self):
         """
         Transposes the current image
-
-        Transposing is tricky, as it is hard to remember which values have been
-        changed and which have not.  To simplify the process, we copy the
-        current image and use that as a reference.  So we change the current
-        image with setPixel, but read (with getPixel) from the copy.
         """
         current  = self.getCurrent()
         original = current.copy()
         current.setWidth(current.getHeight())
 
-        for row in range(current.getHeight()):      # Loop over the rows
-            for col in range(current.getWidth()):   # Loop over the columnns
+        for row in range(current.getHeight()):
+            for col in range(current.getWidth()):
                 current.setPixel(row,col,original.getPixel(col,row))
 
     def reflectHori(self):
@@ -72,51 +40,42 @@ class Filter(a6editor.Editor):
         Reflects the current image around the horizontal middle.
         """
         current = self.getCurrent()
-        for h in range(current.getWidth()//2):      # Loop over the columnns
-            for row in range(current.getHeight()):  # Loop over the rows
+        for h in range(current.getWidth()//2):
+            for row in range(current.getHeight()):
                 k = current.getWidth()-1-h
                 current.swapPixels(row,h,row,k)
 
     def rotateRight(self):
         """
         Rotates the current image left by 90 degrees.
-
-        Technically, we can implement this via a transpose followed by a
-        vertical reflection. However, this is slow, so we use the faster
-        strategy below.
         """
         current  = self.getCurrent()
         original = current.copy()
         current.setWidth(current.getHeight())
 
-        for row in range(current.getHeight()):      # Loop over the rows
-            for col in range(current.getWidth()):   # Loop over the columnns
+        for row in range(current.getHeight()):
+            for col in range(current.getWidth()):  
                 current.setPixel(row,col,original.getPixel(original.getHeight()-col-1,row))
 
     def rotateLeft(self):
         """
         Rotates the current image left by 90 degrees.
-
-        Technically, we can implement this via a transpose followed by a
-        vertical reflection. However, this is slow, so we use the faster
-        strategy below.
         """
         current  = self.getCurrent()
         original = current.copy()
         current.setWidth(current.getHeight())
 
-        for row in range(current.getHeight()):      # Loop over the rows
-            for col in range(current.getWidth()):   # Loop over the columnns
+        for row in range(current.getHeight()): 
+            for col in range(current.getWidth()): 
                 current.setPixel(row,col,original.getPixel(col,original.getWidth()-row-1))
 
-    # ASSIGNMENT METHODS (IMPLEMENT THESE)
     def reflectVert(self):
         """
         Reflects the current image around the vertical middle.
         """
         current = self.getCurrent()
-        for h in range(current.getWidth()):      # Loop over the columnns
-            for row in range(current.getHeight()//2):  # Loop over the rows
+        for h in range(current.getWidth()):  
+            for row in range(current.getHeight()//2):
                 k = current.getHeight()-1-row
                 current.swapPixels(row,h,k,h)
 
@@ -155,10 +114,7 @@ class Filter(a6editor.Editor):
         * Put 4-pixel vertical bars down left and right, and
         * Put n 4-pixel vertical bars inside, where n is
           (number of columns - 8) // 50.
-
-        Note that the formula for the number of interior bars is explicitly
-        not counting the two bars on the outside.
-
+          
         The n+2 vertical bars should be as evenly spaced as possible.
         """
         color=(255,0,0)
@@ -179,15 +135,6 @@ class Filter(a6editor.Editor):
 
         Vignetting is a characteristic of antique lenses. This plus sepia tone
         helps give a photo an antique feel.
-
-        To vignette, darken each pixel in the image by the factor
-
-            1 - (d / hfD)^2
-
-        where d is the distance from the pixel to the center of the image and
-        hfD (for half diagonal) is the distance from the center of the image
-        to any of the corners.  The values d and hfD should be left as floats
-        and not converted to ints.
         """
         current=self.getCurrent()
         height=current.getHeight()
@@ -202,38 +149,6 @@ class Filter(a6editor.Editor):
                 green=(col[1])*val
                 blue=(col[2])*val
                 current.setPixel(x,y,(int(red),int(green),int(blue)))
-
-    # OPTIONAL METHOD
-    def pixellate(self,step):
-        """
-        Pixellates the current image to give it a blocky feel.
-
-        To pixellate an image, start with the top left corner (e.g. the first
-        row and column).  Average the colors of the step x step block to the
-        right and down from this corner (if there are less than step rows or
-        step columns, go to the edge of the image). Then assign that average
-        to ALL of the pixels in that block.
-
-        When you are done, skip over step rows and step columns to go to the
-        next corner pixel.  Repeat this process again.  The result will be a
-        pixellated image.
-
-        Parameter step: The number of pixels in a pixellated block
-        Precondition: step is an int > 0
-        """
-        current=self.getCurrent()
-        height=current.getHeight()
-        width=current.getWidth()
-        for x_s in range(0,width,step):
-            for y_s in range(0,height,step):
-                color=0
-                if(x_s>=width or y_s>=height):
-                    color=self._helper_pixellate(x_s,width,y_s,height)
-                else:
-                    color=self._helper_pixellate(x_s,x_s+step,y_s,y_s+step)
-                for x in range(0,x_s):
-                    for y in range(0,y_s):
-                        current.setPixel(x,y,color)
 
     # HELPER METHODS
     def _drawHBar(self, row, pixel):
@@ -279,32 +194,3 @@ class Filter(a6editor.Editor):
             current.setPixel(row,col+1,pixel)
             current.setPixel(row,col+2,pixel)
             current.setPixel(row,col+3,pixel)
-
-    def _helper_pixellate(self,min_w,max_w,min_h,max_h):
-        current=self.getCurrent()
-        height=current.getHeight()
-        width=current.getWidth()
-        red=0
-        green=0
-        blue=0
-        broken=False
-        for x in range (min_w,max_w):
-            for y in range (min_h,max_h):
-                if(x>=width or y>=height):
-                    broken==True
-                    broken_x=x
-                    broken_y=y
-                    break
-                else:
-                    red=red+current.getPixel(x,y)[0]
-                    green=green+current.getPixel(x,y)[1]
-                    blue=blue+current.getPixel(x,y)[2]
-        if(broken==True):
-            r=int(red/((broken_y-min_h)*(broken_x-min_w)))
-            g=int(green/((broken_y-min_h)*(broken_x-min_w)))
-            b=int(blue/((broken_y-min_h)*(broken_x-min_w)))
-        else:
-            r=int(red/((max_h-min_h)*(max_w-min_w)))
-            g=int(green/((max_h-min_h)*(max_w-min_w)))
-            b=int(blue/((max_h-min_h)*(max_w-min_w)))
-        return (r,g,b)
